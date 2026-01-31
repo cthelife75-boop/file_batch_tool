@@ -19,14 +19,11 @@ from datetime import datetime
 from tqdm import tqdm
 from PIL import Image, ImageDraw, ImageFont
 
+# 解决PIL处理大图片的DecompressionBombWarning
 Image.MAX_IMAGE_PIXELS = None
 
 # --- 批量重命名 ---
 def batch_rename(args):
-    """
-    批量重命名文件
-    :param args: 命令行参数
-    """
     file_list = [f for f in Path(args.dir).glob("*") if f.is_file()]
     if not file_list:
         print(f"❌ 目录 {args.dir} 下未找到文件")
@@ -61,16 +58,19 @@ def batch_rename(args):
 
     print(f"✅ 重命名完成，共处理 {rename_count} 个文件")
 
-# --- 批量转换图片格式 ---
+# --- 批量转换图片格式（终极修复版）---
 def batch_convert_image(args):
-    """
-    批量转换图片格式
-    :param args: 命令行参数
-    """
+    """批量转换图片格式（全兼容版）"""
+    # 支持的图片格式
     SUPPORT_FORMATS = ["jpg", "jpeg", "png", "webp"]
+    # 目标格式统一为小写
+    target_format = args.to_format.lower()
+    
+    # 获取目标目录下的图片文件
     img_list = []
     for ext in SUPPORT_FORMATS:
         img_list.extend(Path(args.dir).glob(f"*.{ext}"))
+        img_list.extend(Path(args.dir).glob(f"*.{ext.upper()}"))  # 兼容大写扩展名
     img_list = [f for f in img_list if f.is_file()]
 
     if not img_list:
@@ -79,17 +79,45 @@ def batch_convert_image(args):
 
     convert_count = 0
     print(f"🖼️ 开始批量转换图片格式，共找到 {len(img_list)} 张图片")
+    
     for img_path in tqdm(img_list):
         try:
-            img = Image.open(img_path)
-            if args.to_format.lower() == "jpg" and img.mode in ("RGBA", "P"):
-                bg = Image.new("RGB", img.size, (255, 255, 255))
-                bg.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
-                img = bg
-            new_name = img_path.stem + f".{args.to_format.lower()}"
-            new_path = img_path.parent / new_name
-            img.save (new_path, args.to_format.lower ())
-            convert_count += 1
+            # 打开图片并处理模式
+            with Image.open(img_path) as img:
+                # 1. 处理JPG不支持透明通道的问题
+                if target_format in ["jpg", "jpeg"]:
+                    # 转换为RGB模式，透明区域填充白色
+                    if img.mode in ("RGBA", "P"):
+                        bg = Image.new("RGB", img.size, (255, 255, 255))
+                        # 处理mask兼容问题
+                        mask = img.split()[-1] if img.mode == "RGBA" else None
+                        bg.paste(img, (0, 0), mask)
+                        img = bg
+                    else:
+                        img = img.convert("RGB")
+                else:
+                    # PNG/WebP保留透明通道
+                    img = img.convert("RGBA") if img.mode != "RGBA" else img
+
+                # 2. 拼接新文件名（避免重复）
+                new_name = f"{img_path.stem}_converted.{target_format}"
+                new_path = img_path.parent / new_name
+                
+                # 3. 兼容Pillow的格式参数
+                format_map = {
+                    "jpg": "JPEG",
+                    "jpeg": "JPEG",
+                    "png": "PNG",
+                    "webp": "WEBP"
+                }
+                save_format = format_map.get(target_format, target_format.upper())
+
+                # 4. 保存图片（处理权限问题）
+                img.save(new_path, save_format, quality=95)
+                convert_count += 1
+                
+        except PermissionError:
+            print(f"\n⚠️ 无权限写入 {new_path}，请关闭该文件后重试")
         except Exception as e:
             print(f"\n⚠️ 处理 {img_path.name} 失败：{str(e)}")
             continue
@@ -98,10 +126,6 @@ def batch_convert_image(args):
 
 # --- 批量压缩文件 ---
 def batch_compress(args):
-    """
-    批量压缩文件为ZIP包
-    :param args: 命令行参数
-    """
     file_list = [f for f in Path(args.dir).glob("*") if f.is_file()]
     if args.exclude:
         exclude_exts = [ext.strip() for ext in args.exclude.split(",")]
@@ -126,7 +150,6 @@ def batch_compress(args):
 
 # --- 批量文件分类 ---
 def batch_classify(args):
-    """按扩展名或创建日期批量分类文件"""
     file_list = [f for f in Path(args.dir).glob("*") if f.is_file()]
     if not file_list:
         print(f"❌ 目录 {args.dir} 下无文件")
@@ -155,12 +178,12 @@ def batch_classify(args):
             count += 1
         except Exception as e:
             print(f"\n⚠️ 移动 {file_path.name} 失败：{str(e)}")
+            continue
 
     print(f"✅ 分类完成，共处理 {count} 个文件，已归档至 {classify_dir}")
 
 # --- 图片批量加水印 ---
 def batch_watermark(args):
-    """给图片批量添加文字或图片水印"""
     SUPPORT_FORMATS = ["jpg", "jpeg", "png", "webp"]
     img_list = []
     for ext in SUPPORT_FORMATS:
@@ -175,10 +198,21 @@ def batch_watermark(args):
     print(f"🔖 开始批量添加水印，共 {len(img_list)} 张图片")
 
     if args.type == "text":
-        font = ImageFont.truetype(args.font, args.size) if args.font else ImageFont.load_default()
+        color = eval(args.color) if args.color else (255, 255, 255, 128)
+        try:
+            font = ImageFont.truetype(args.font, args.size) if args.font else ImageFont.load_default()
+        except:
+            font = ImageFont.load_default()
     elif args.type == "image":
-        watermark_img = Image.open(args.watermark_path).convert("RGBA")
-        watermark_img = watermark_img.resize((args.size, args.size), Image.Resampling.LANCZOS)
+        try:
+            watermark_img = Image.open(args.watermark_path).convert("RGBA")
+            watermark_img = watermark_img.resize((args.size, args.size), Image.Resampling.LANCZOS)
+            alpha = watermark_img.split()[3]
+            alpha = alpha.point(lambda p: p * args.opacity / 255)
+            watermark_img.putalpha(alpha)
+        except Exception as e:
+            print(f"❌ 加载图片水印失败：{str(e)}")
+            return
     else:
         print(f"⚠️ 不支持的水印类型：{args.type}")
         return
@@ -194,16 +228,20 @@ def batch_watermark(args):
                 text_width = text_bbox[2] - text_bbox[0]
                 text_height = text_bbox[3] - text_bbox[1]
                 pos = (width - text_width - 20, height - text_height - 20)
-                draw.text(pos, args.content, font=font, fill=args.color, opacity=args.opacity)
+                draw.text(pos, args.content, font=font, fill=color)
             elif args.type == "image":
                 pos = (width - args.size - 20, height - args.size - 20)
                 img.paste(watermark_img, pos, mask=watermark_img)
 
             new_path = img_path.parent / f"watermarked_{img_path.name}"
-            img.convert("RGB").save(new_path, "JPEG" if img_path.suffix.lower() in (".jpg", ".jpeg") else img_path.suffix[1:].upper())
+            if img_path.suffix.lower() in (".jpg", ".jpeg"):
+                img.convert("RGB").save(new_path, "JPEG")
+            else:
+                img.save(new_path, img_path.suffix[1:].upper())
             count += 1
         except Exception as e:
             print(f"\n⚠️ 处理 {img_path.name} 失败：{str(e)}")
+            continue
 
     print(f"✅ 水印添加完成，共处理 {count} 张图片")
 
@@ -215,10 +253,10 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="子命令（必选）")
 
-    # 1. 重命名子命令
+    # 1. 重命名子命令（修复转义字符警告）
     parser_rename = subparsers.add_parser("rename", help="批量重命名文件")
     parser_rename.add_argument("-d", "--dir", required=True, help="目标目录（如 ./test）")
-    parser_rename.add_argument ("-p", "--pattern", help=r"正则匹配模式（如 'img_(\d+)'）")
+    parser_rename.add_argument("-p", "--pattern", help=r"正则匹配模式（如 'img_(\d+)'）")
     parser_rename.add_argument("-r", "--replace", help="正则替换内容（如 'photo_\\1'）")
     parser_rename.add_argument("--prefix", help="添加前缀（如 '2024_'）")
     parser_rename.add_argument("--suffix", help="添加后缀（如 '_v1'）")
@@ -244,20 +282,27 @@ def main():
     parser_watermark.add_argument("-d", "--dir", required=True, help="图片目录")
     parser_watermark.add_argument("-t", "--type", required=True, choices=["text", "image"], help="水印类型")
     parser_watermark.add_argument("-c", "--content", help="文字水印内容（type=text时必填）")
-    parser_watermark.add_argument("-f", "--font", help="文字水印字体路径（可选）")
-    parser_watermark.add_argument("-s", "--size", type=int, default=24, help="水印大小（文字字号/图片尺寸）")
-    parser_watermark.add_argument("-color", "--color", default=(255, 255, 255, 128), help="文字水印颜色（RGBA）")
-    parser_watermark.add_argument("-o", "--opacity", type=int, default=128, help="水印透明度（0-255）")
+    parser_watermark.add_argument("-f", "--font", help="文字水印字体路径（可选，默认系统字体）")
+    parser_watermark.add_argument("-s", "--size", type=int, default=24, help="水印大小（文字字号/图片尺寸，默认24）")
+    parser_watermark.add_argument("-color", "--color", default="(255,255,255,128)", help="文字水印颜色（RGBA，默认白色半透明：(255,255,255,128)）")
+    parser_watermark.add_argument("-o", "--opacity", type=int, default=128, help="水印透明度（0-255，默认128）")
     parser_watermark.add_argument("-w", "--watermark-path", help="图片水印路径（type=image时必填）")
 
     args = parser.parse_args()
+
     if not args.command:
         parser.print_help()
         return
-
     if hasattr(args, "dir") and not Path(args.dir).exists():
         print(f"❌ 目录 {args.dir} 不存在")
         return
+    if args.command == "watermark":
+        if args.type == "text" and not args.content:
+            print(f"❌ type=text时，必须指定 --content 文字内容")
+            return
+        if args.type == "image" and not args.watermark_path:
+            print(f"❌ type=image时，必须指定 --watermark-path 图片路径")
+            return
 
     try:
         if args.command == "rename":
