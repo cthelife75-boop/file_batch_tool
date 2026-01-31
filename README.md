@@ -20,7 +20,7 @@ python -m pip install -r requirements.txt
 ```
 
 # 📖 使用示例
-##使用之前
+使用之前
 找到 Python 的 Scripts 路径，比如：
 C:\Users\LX\AppData\Local\Programs\Python\Python3x\Scripts
 把这个路径添加到系统环境变量 PATH 里。
