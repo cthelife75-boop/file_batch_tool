@@ -78,7 +78,7 @@ def batch_convert_image(args):
         return
 
     convert_count = 0
-    print(f"🖼️ 开始批量转换图片格式，共找到 {len(img_list)} 张图片")
+    print(f"🖼️ 开始批量转换图片格式，共找到 {len(img_list)/2} 张图片")
     
     for img_path in tqdm(img_list):
         try:
@@ -122,7 +122,7 @@ def batch_convert_image(args):
             print(f"\n⚠️ 处理 {img_path.name} 失败：{str(e)}")
             continue
 
-    print(f"✅ 图片转换完成，共成功处理 {convert_count} 张图片")
+    print(f"✅ 图片转换完成，共成功处理 {convert_count/2} 张图片")
 
 # --- 批量压缩文件 ---
 def batch_compress(args):
