@@ -25,7 +25,7 @@
 
 ## 📥 快速使用
 ### 方式1：直接下载可执行文件（推荐，无需编程环境）
-1. 进入仓库 [Releases 页面](https://gitee.com/the-life/file_batch_tool/releases)
+1. 进入仓库 [Releases 页面](https://github.com/c-the-life/file_batch_tool/releases)
 2. 下载最新版本的 `文件批量处理工具_v1.0.exe`（或对应版本号）
 3. 双击 exe 文件即可运行，无需安装 Python 或任何依赖
 
@@ -37,7 +37,7 @@
 #### 安装依赖
 ```bash
 # 克隆仓库
-git clone https://gitee.com/the-life/file_batch_tool.git
+git clone https://github.com/c-the-life/file_batch_tool.git
 cd file_batch_tool
 
 # 安装核心依赖
