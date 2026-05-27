@@ -4,6 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-green.svg)](https://github.com/)
 [![PyPI](https://img.shields.io/pypi/v/file-batch-tool.svg)](https://pypi.org/project/file-batch-tool/)
+[![GitHub contributors](https://img.shields.io/github/contributors/c-the-life/file_batch_tool.svg)](https://github.com/c-the-life/file_batch_tool/graphs/contributors)
 
 > 🎯 一款基于 PyQt5 的图形化文件批量处理工具，同时也可作为 Python 库被其他项目引用！
 
@@ -142,7 +143,17 @@ batch_compress("/path/to/files", output="archive.zip")
 
 ## 🤝 贡献代码
 
-欢迎提交 Issue 和 Pull Request！
+欢迎加入我们！请查看 [贡献指南](CONTRIBUTING.md) 了解详细的贡献流程。
+
+### ✨ 贡献者
+
+感谢所有为这个项目做出贡献的人！
+
+| 贡献者 | GitHub |
+|--------|--------|
+| the-life | [c-the-life](https://github.com/c-the-life) |
+
+查看完整的 [贡献者统计](https://github.com/c-the-life/file_batch_tool/graphs/contributors)
 
 ## 📄 开源协议
 
