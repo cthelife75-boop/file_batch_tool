@@ -1,0 +1,454 @@
+# 📖 完整教程
+=======
+
+## 目录
+1. [快速入门](#1-快速入门)
+2. [作为库使用](#2-作为库使用)
+3. [依赖其他项目](#3-依赖其他项目)
+4. [发布自己的库](#4-发布自己的库)
+5. [让其他项目依赖你](#5-让其他项目依赖你)
+
+---
+
+## 1. 快速入门
+
+### 1.1 图形界面使用
+
+```bash
+# 克隆项目
+git clone https://github.com/c-the-life/file_batch_tool.git
+cd file_batch_tool
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行程序
+python file-batch-tool.py
+```
+
+### 1.2 项目结构
+
+```
+file_batch_tool/
+├── src/
+│   ├── core/              # 核心模块
+│   │   └── worker.py      # 工作线程
+│   ├── ui/                # 界面模块
+│   │   └── main_window.py # 主窗口
+│   ├── utils/             # 工具模块
+│   │   └── file_operations.py  # 文件操作函数
+│   └── __init__.py        # 包导出
+├── examples/              # 示例代码
+├── API.md                 # API 文档
+├── DEPENDENCIES.md        # 依赖管理指南
+├── README.md              # 项目说明
+├── requirements.txt       # 依赖列表
+└── setup.py               # 打包配置
+```
+
+---
+
+## 2. 作为库使用
+
+### 2.1 安装
+
+```bash
+# 从源码安装（开发模式）
+pip install -e .
+
+# 或使用 requirements.txt
+pip install -r requirements.txt
+```
+
+### 2.2 基本导入
+
+```python
+# 导入所有功能
+from file_batch_tool import (
+    batch_rename,
+    batch_convert_image,
+    batch_compress,
+    batch_classify,
+    batch_watermark,
+    batch_modify_file_time,
+    batch_extract_exif,
+    batch_copy_move,
+    FileToolMainWindow,
+    WorkerThread
+)
+```
+
+### 2.3 实际例子
+
+#### 例子1：批量处理图片
+
+```python
+"""
+图片批量处理脚本
+1. 转换格式
+2. 添加水印
+3. 重命名
+"""
+from file_batch_tool import batch_convert_image, batch_watermark, batch_rename
+from pathlib import Path
+
+def process_photo_album(input_dir):
+    # 1. 转换为 WebP 格式
+    print("步骤1：转换格式...")
+    batch_convert_image(input_dir, to_format="webp")
+    
+    # 2. 添加水印
+    print("\n步骤2：添加水印...")
+    batch_watermark(
+        input_dir,
+        type_="text",
+        content="My Photo Album",
+        size=30,
+        opacity=100
+    )
+    
+    # 3. 重命名
+    print("\n步骤3：重命名...")
+    batch_rename(input_dir, prefix="photo_", suffix="_processed")
+    
+    print("\n✅ 处理完成！")
+
+if __name__ == "__main__":
+    process_photo_album("./my_photos")
+```
+
+#### 例子2：自动化备份脚本
+
+```python
+"""
+自动化备份脚本
+每周备份重要文件
+"""
+from file_batch_tool import batch_compress, batch_copy_move
+from datetime import datetime
+import os
+
+def backup_files(source_dir, backup_dir):
+    # 创建带日期的备份目录
+    date_str = datetime.now().strftime("%Y%m%d")
+    backup_path = f"{backup_dir}/backup_{date_str}"
+    
+    # 复制文件
+    print(f"复制文件到 {backup_path}...")
+    batch_copy_move(
+        source_dir,
+        target_dir=backup_path,
+        mode="copy",
+        exclude="tmp,log"
+    )
+    
+    # 压缩备份
+    print("压缩备份...")
+    batch_compress(
+        backup_path,
+        output=f"{backup_path}.zip"
+    )
+    
+    print("✅ 备份完成！")
+
+if __name__ == "__main__":
+    backup_files("./important_files", "./backups")
+```
+
+#### 例子3：带进度回调
+
+```python
+"""
+带进度显示的处理
+"""
+from file_batch_tool import batch_rename, batch_compress
+
+def progress_callback(msg):
+    if msg.startswith("progress:"):
+        progress = int(msg.split(":")[1])
+        bar_length = 40
+        filled = int(bar_length * progress / 100)
+        bar = "█" * filled + "░" * (bar_length - filled)
+        print(f"\r处理中: [{bar}] {progress}%", end="", flush=True)
+    else:
+        print(f"\n{msg}")
+
+def process_with_progress(directory):
+    print("开始处理...")
+    batch_rename(
+        directory,
+        prefix="final_",
+        log_callback=progress_callback
+    )
+    
+    print("\n压缩文件...")
+    batch_compress(
+        directory,
+        output="result.zip",
+        log_callback=progress_callback
+    )
+
+if __name__ == "__main__":
+    process_with_progress("./files_to_process")
+```
+
+---
+
+## 3. 依赖其他项目
+
+### 3.1 在 requirements.txt 中添加依赖
+
+```txt
+# file_batch_tool 的依赖（已有）
+Pillow>=10.0.0
+PyQt5>=5.15.0
+
+# 添加新的依赖
+requests>=2.31.0          # HTTP 请求
+numpy>=1.24.0             # 数值计算
+pandas>=2.0.0             # 数据处理
+```
+
+### 3.2 在 setup.py 中添加依赖
+
+```python
+# setup.py
+setup(
+    name="file-batch-tool",
+    version="1.1.0",
+    # ... 其他配置
+    install_requires=[
+        "Pillow>=10.0.0",
+        "PyQt5>=5.15.0",
+        "requests>=2.31.0",  # 新增依赖
+        "numpy>=1.24.0",     # 新增依赖
+    ],
+    # 可选依赖
+    extras_require={
+        "dev": [
+            "pytest>=7.0.0",
+            "black>=23.0.0",
+        ],
+        "full": [
+            "requests>=2.31.0",
+            "numpy>=1.24.0",
+            "pandas>=2.0.0",
+        ]
+    }
+)
+```
+
+### 3.3 使用新加的依赖
+
+```python
+# 在您的代码中使用新依赖
+import requests
+import numpy as np
+from PIL import Image
+
+def download_image(url, save_path):
+    """使用 requests 下载图片"""
+    response = requests.get(url)
+    with open(save_path, "wb") as f:
+        f.write(response.content)
+
+def process_with_numpy(image_path):
+    """使用 numpy 处理图片"""
+    img = Image.open(image_path)
+    img_array = np.array(img)
+    # 处理...
+    return img_array
+```
+
+---
+
+## 4. 发布自己的库
+
+### 4.1 准备工作
+
+```bash
+# 1. 安装必要的工具
+pip install --upgrade build twine
+
+# 2. 清理旧的构建
+rm -rf dist/ build/ *.egg-info/
+```
+
+### 4.2 构建包
+
+```bash
+# 构建
+python -m build
+```
+
+这会在 `dist/` 目录下生成：
+- `.tar.gz` - 源码分发包
+- `.whl` - 二进制分发包
+
+### 4.3 上传到 TestPyPI（测试）
+
+```bash
+# 注册账号：https://test.pypi.org/account/register/
+
+# 上传
+twine upload --repository testpypi dist/*
+```
+
+测试安装：
+```bash
+pip install --index-url https://test.pypi.org/simple/ file-batch-tool
+```
+
+### 4.4 上传到 PyPI（正式）
+
+```bash
+# 注册账号：https://pypi.org/account/register/
+
+# 上传
+twine upload dist/*
+```
+
+正式安装：
+```bash
+pip install file-batch-tool
+```
+
+---
+
+## 5. 让其他项目依赖你
+
+### 5.1 场景1：另一个 Python 项目依赖你
+
+假设 Alice 在做一个项目叫 `photo-manager`，她想使用你的库。
+
+#### Alice 的项目结构
+
+```
+photo-manager/
+├── requirements.txt
+├── setup.py
+└── photo_manager/
+    ├── __init__.py
+    └── main.py
+```
+
+#### Alice 的 requirements.txt
+
+```txt
+# 依赖你的库
+file-batch-tool>=1.1.0
+
+# 她项目的其他依赖
+Pillow>=10.0.0
+requests>=2.31.0
+```
+
+#### Alice 的代码
+
+```python
+# photo_manager/main.py
+from file_batch_tool import batch_convert_image, batch_watermark
+
+class PhotoManager:
+    def __init__(self, input_dir, output_dir):
+        self.input_dir = input_dir
+        self.output_dir = output_dir
+    
+    def process(self):
+        # 使用你的库
+        batch_convert_image(self.input_dir, to_format="webp")
+        batch_watermark(
+            self.input_dir,
+            type_="text",
+            content="© Photo Manager"
+        )
+        print("✅ 处理完成！")
+
+if __name__ == "__main__":
+    manager = PhotoManager("./photos", "./output")
+    manager.process()
+```
+
+### 5.2 场景2：从 Git 仓库依赖
+
+如果 Alice 想直接用 GitHub 上的最新版本：
+
+```txt
+# Alice 的 requirements.txt
+git+https://github.com/c-the-life/file_batch_tool.git@main#egg=file-batch-tool
+```
+
+或者指定版本：
+
+```txt
+git+https://github.com/c-the-life/file_batch_tool.git@v1.1.0#egg=file-batch-tool
+```
+
+### 5.3 场景3：作为子模块
+
+```bash
+# Alice 把你的项目作为子模块
+git submodule add https://github.com/c-the-life/file_batch_tool.git libs/file_batch_tool
+```
+
+然后在她的代码中：
+
+```python
+import sys
+sys.path.append("libs/file_batch_tool/src")
+
+from file_batch_tool import batch_rename
+```
+
+---
+
+## 6. 最佳实践
+
+### 6.1 版本管理
+
+使用语义化版本：
+- `1.0.0` - 初始版本
+- `1.0.1` - Bug 修复
+- `1.1.0` - 新功能（向后兼容）
+- `2.0.0` - 重大变更（不兼容）
+
+### 6.2 文档
+
+- ✅ 保持 README 最新
+- ✅ 提供 API 文档
+- ✅ 提供示例代码
+- ✅ 维护变更日志
+
+### 6.3 测试
+
+```python
+# 为您的库编写测试
+import pytest
+from file_batch_tool import batch_rename
+from pathlib import Path
+
+def test_batch_rename(tmp_path):
+    # 创建测试文件
+    test_file = tmp_path / "test.txt"
+    test_file.touch()
+    
+    # 执行重命名
+    batch_rename(str(tmp_path), prefix="new_")
+    
+    # 验证
+    assert (tmp_path / "new_test.txt").exists()
+```
+
+---
+
+## 总结
+
+现在您已经知道：
+
+1. ✅ 如何使用图形界面
+2. ✅ 如何作为 Python 库使用
+3. ✅ 如何依赖其他项目
+4. ✅ 如何发布自己的库
+5. ✅ 如何让其他项目依赖你
+
+开始编码吧！🚀

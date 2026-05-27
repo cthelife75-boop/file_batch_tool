@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-green.svg)](https://github.com/)
+[![PyPI](https://img.shields.io/pypi/v/file-batch-tool.svg)](https://pypi.org/project/file-batch-tool/)
 
-> 🎯 一款基于 PyQt5 的图形化文件批量处理工具，界面美观，操作简单，效率翻倍！
+> 🎯 一款基于 PyQt5 的图形化文件批量处理工具，同时也可作为 Python 库被其他项目引用！
 
 ## ✨ 为什么选择我们？
 
@@ -71,6 +72,35 @@ python file-batch-tool.py
 2. 选择目标格式（JPG/PNG/WebP）
 3. 一键转换，透明区域自动处理
 ```
+
+---
+
+## 📚 作为 Python 库使用
+
+### 安装
+```bash
+pip install file-batch-tool
+```
+
+### 快速开始
+```python
+from file_batch_tool import batch_rename, batch_convert_image, batch_compress
+
+# 批量重命名
+batch_rename("/path/to/files", prefix="processed_")
+
+# 图片格式转换
+batch_convert_image("/path/to/images", to_format="webp")
+
+# 文件压缩
+batch_compress("/path/to/files", output="archive.zip")
+```
+
+### 更多示例
+详细的 API 文档和示例请查看：
+- [API 文档](API.md) - 完整的 API 参考
+- [依赖管理指南](DEPENDENCIES.md) - 如何依赖和被依赖
+- [示例代码](examples/) - 可运行的示例脚本
 
 ## 🎯 核心优势
 
