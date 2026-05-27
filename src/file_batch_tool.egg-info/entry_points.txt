@@ -1,0 +1,2 @@
+[console_scripts]
+file-batch-tool = file_batch_tool.main_window:run

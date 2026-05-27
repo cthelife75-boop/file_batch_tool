@@ -1,0 +1,16 @@
+LICENSE
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+src/__init__.py
+src/core/worker.py
+src/file_batch_tool.egg-info/PKG-INFO
+src/file_batch_tool.egg-info/SOURCES.txt
+src/file_batch_tool.egg-info/dependency_links.txt
+src/file_batch_tool.egg-info/entry_points.txt
+src/file_batch_tool.egg-info/not-zip-safe
+src/file_batch_tool.egg-info/requires.txt
+src/file_batch_tool.egg-info/top_level.txt
+src/ui/main_window.py
+src/utils/file_operations.py
