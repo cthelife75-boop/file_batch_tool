@@ -136,6 +136,39 @@ class FileToolMainWindow(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
 
+        api_group = QGroupBox("🔑 OpenAI API 设置")
+        api_layout = QHBoxLayout(api_group)
+        api_layout.setSpacing(12)
+        
+        self.api_key_input = QLineEdit()
+        self.api_key_input.setPlaceholderText("输入您的 OpenAI API Key（可选）")
+        self.api_key_input.setEchoMode(QLineEdit.Password)
+        self.api_key_input.setStyleSheet("""
+            QLineEdit {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 13px;
+                min-width: 300px;
+            }
+            QLineEdit:focus {
+                border-color: #3182ce;
+            }
+        """)
+        api_layout.addWidget(self.api_key_input)
+
+        self.use_ai_checkbox = QCheckBox("启用真实AI引擎")
+        self.use_ai_checkbox.setStyleSheet("font-size: 13px;")
+        api_layout.addWidget(self.use_ai_checkbox)
+
+        self.ai_status_label = QLabel("📶 AI状态：离线模式（使用规则匹配）")
+        self.ai_status_label.setStyleSheet("color: #718096; font-size: 12px;")
+        api_layout.addWidget(self.ai_status_label)
+        
+        api_layout.addStretch()
+        layout.addWidget(api_group)
+
         ai_group = QGroupBox("🤖 AI 智能助手")
         ai_layout = QVBoxLayout(ai_group)
         ai_layout.setSpacing(16)
@@ -201,7 +234,17 @@ class FileToolMainWindow(QMainWindow):
                 min-height: 200px;
             }
         """)
-        self.chat_history.setText("🤖 你好！我是您的文件处理助手。\n\n请告诉我您想做什么，例如：\n- 把图片转换成webp格式\n- 给图片加水印\n- 按扩展名分类文件\n- 提取图片EXIF信息\n\n您可以先选择文件，然后告诉我要执行什么操作。")
+        self.chat_history.setText("🤖 你好！我是您的文件处理助手。
+
+请告诉我您想做什么，例如：
+- 把图片转换成webp格式
+- 给图片加水印
+- 按扩展名分类文件
+- 提取图片EXIF信息
+
+您可以先选择文件，然后告诉我要执行什么操作。
+
+💡 提示：如果您有OpenAI API Key，可以在上方输入以启用更智能的AI解析功能。")
         
         chat_layout.addWidget(self.chat_history)
         ai_layout.addWidget(chat_container)
@@ -223,12 +266,17 @@ class FileToolMainWindow(QMainWindow):
         """)
         
         commands = self.ai_assistant.get_supported_commands()
-        hint_content = "我可以帮您完成以下任务：\n\n"
+        hint_content = "我可以帮您完成以下任务：
+
+"
         for cmd in commands:
-            hint_content += f"• {cmd['description']}\n"
+            hint_content += f"• {cmd['description']}
+"
             for example in cmd['examples'][:2]:
-                hint_content += f"  - {example}\n"
-            hint_content += "\n"
+                hint_content += f"  - {example}
+"
+            hint_content += "
+"
         
         hint_text.setText(hint_content)
         hint_layout.addWidget(hint_text)
@@ -238,12 +286,29 @@ class FileToolMainWindow(QMainWindow):
         layout.addWidget(ai_group)
 
         self.tab_widget.addTab(tab, "🤖 AI助手")
-
     def on_ai_command(self):
         """处理AI命令"""
         user_input = self.ai_input.text().strip()
         if not user_input:
             return
+
+        # 检查是否启用真实AI
+        use_real_ai = self.use_ai_checkbox.isChecked()
+        api_key = self.api_key_input.text().strip()
+        
+        # 更新AI助手配置
+        self.ai_assistant = AIAssistant(
+            use_real_ai=use_real_ai,
+            api_key=api_key if use_real_ai else None
+        )
+        
+        # 更新状态显示
+        if self.ai_assistant.is_real_ai_available():
+            self.ai_status_label.setText("✅ AI状态：在线模式（使用OpenAI GPT）")
+            self.ai_status_label.setStyleSheet("color: #48bb78; font-size: 12px;")
+        else:
+            self.ai_status_label.setText("📶 AI状态：离线模式（使用规则匹配）")
+            self.ai_status_label.setStyleSheet("color: #718096; font-size: 12px;")
 
         self.chat_history.append(f"\n\n👤 您说：{user_input}")
         self.ai_input.clear()
@@ -253,7 +318,6 @@ class FileToolMainWindow(QMainWindow):
 
         if parsed:
             self.execute_ai_command(parsed)
-
     def execute_ai_command(self, command):
         """执行AI解析的命令"""
         cmd_type = command['command']

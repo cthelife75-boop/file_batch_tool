@@ -28,6 +28,12 @@ setup(
             "pytest>=7.0.0",
             "black>=23.0.0",
         ],
+        "ai": [
+            "openai>=1.0.0",
+        ],
+        "all": [
+            "openai>=1.0.0",
+        ],
     },
     entry_points={
         "console_scripts": [

@@ -1,8 +1,23 @@
 import re
+import json
 from typing import List, Dict, Optional, Tuple
 
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+
+
 class AIAssistant:
-    def __init__(self):
+    def __init__(self, use_real_ai=False, api_key=None, model="gpt-3.5-turbo"):
+        self.use_real_ai = use_real_ai
+        self.api_key = api_key
+        self.model = model
+        
+        if self.use_real_ai and OPENAI_AVAILABLE and self.api_key:
+            openai.api_key = self.api_key
+        
         self.supported_commands = {
             'rename': {
                 'patterns': [
@@ -92,6 +107,13 @@ class AIAssistant:
         """解析用户自然语言命令"""
         user_input = user_input.strip()
         
+        if self.use_real_ai and OPENAI_AVAILABLE and self.api_key:
+            return self._parse_with_real_ai(user_input)
+        else:
+            return self._parse_with_rules(user_input)
+
+    def _parse_with_rules(self, user_input: str) -> Optional[Dict]:
+        """使用规则匹配解析命令"""
         for command_type, config in self.supported_commands.items():
             for pattern in config['patterns']:
                 match = re.search(pattern, user_input, re.IGNORECASE)
@@ -105,6 +127,62 @@ class AIAssistant:
                     return result
         
         return None
+
+    def _parse_with_real_ai(self, user_input: str) -> Optional[Dict]:
+        """使用真正的AI引擎解析命令"""
+        try:
+            prompt = self._build_prompt(user_input)
+            
+            response = openai.ChatCompletion.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "你是一个文件处理助手，擅长理解用户的文件操作需求并转换为结构化命令。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=200
+            )
+            
+            result = response.choices[0].message['content'].strip()
+            
+            try:
+                parsed = json.loads(result)
+                return parsed
+            except json.JSONDecodeError:
+                return self._parse_with_rules(user_input)
+                
+        except Exception as e:
+            print(f"AI解析失败，使用规则匹配: {e}")
+            return self._parse_with_rules(user_input)
+
+    def _build_prompt(self, user_input: str) -> str:
+        """构建AI提示词"""
+        commands_info = "\n".join([
+            f"- {cmd}: {config['description']}" 
+            for cmd, config in self.supported_commands.items()
+        ])
+        
+        prompt = f"""
+用户输入: "{user_input}"
+
+请分析用户的意图，识别出用户想要执行的文件操作命令。
+
+支持的命令类型:
+{commands_info}
+
+请以JSON格式输出，包含以下字段:
+- command: 命令类型（必须是上述支持的命令之一）
+- description: 命令描述
+- params: 参数对象（根据命令类型添加必要参数）
+
+如果无法识别命令，请返回: {"command": null, "description": "无法识别", "params": {}}
+
+示例输出:
+{{"command": "convert", "description": "图片格式转换", "params": {{"to_format": "webp"}}}}
+{{"command": "rename", "description": "批量重命名文件", "params": {{"prefix": "vacation_", "suffix": "_2024"}}}}
+{{"command": "watermark", "description": "图片加水印", "params": {{"type": "text", "content": "版权所有"}}}}
+"""
+        return prompt
 
     def _extract_params(self, command_type: str, user_input: str) -> Dict:
         """从命令中提取参数"""
@@ -216,7 +294,11 @@ class AIAssistant:
         """生成响应"""
         parsed = self.parse_command(user_input)
         
-        if parsed:
+        if parsed and parsed.get('command'):
             return parsed, f'我来帮您{parsed["description"]}！'
         else:
             return None, '抱歉，我不太理解您的意思。您可以尝试说：\n- 把图片转换成webp格式\n- 给图片加水印\n- 按扩展名分类文件\n- 提取图片EXIF信息'
+
+    def is_real_ai_available(self) -> bool:
+        """检查是否可以使用真实AI"""
+        return self.use_real_ai and OPENAI_AVAILABLE and self.api_key is not None
