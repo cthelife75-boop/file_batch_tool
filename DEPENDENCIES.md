@@ -1,242 +1,238 @@
-# 📦 依赖管理指南
-=======
+# 依赖管理指南
 
-## 一、如何在您的项目中依赖其他项目
+## 一、依赖说明
 
-### 方式1：requirements.txt（推荐用于开发）
+### 核心依赖
 
-创建 `requirements.txt` 文件：
+| 依赖包 | 版本要求 | 用途 | 安装命令 |
+|--------|----------|------|----------|
+| **Pillow** | >= 10.0.0 | 图片处理（格式转换、水印、EXIF提取） | `pip install Pillow>=10.0.0` |
+| **PyQt5** | >= 5.15.0 | GUI图形界面 | `pip install PyQt5>=5.15.0` |
 
-```txt
-# 直接指定包名和版本
-Pillow>=10.0.0
-PyQt5>=5.15.0
+### 为什么选择这些依赖？
 
-# 或者使用精确版本
-requests==2.31.0
+#### Pillow
+- **用途**：图片格式转换、添加水印、提取EXIF信息
+- **优势**：Python 最流行的图片处理库，支持 100+ 种图片格式
+- **文档**：https://pillow.readthedocs.io/
 
-# 从Git仓库安装
-# git+https://github.com/username/repo.git@v1.0.0#egg=package-name
+#### PyQt5
+- **用途**：图形用户界面（GUI）
+- **优势**：跨平台、功能强大、界面美观
+- **文档**：https://www.riverbankcomputing.com/static/Docs/PyQt5/
 
-# 从本地目录安装
-# -e ./path/to/local/package
-```
+---
 
-安装依赖：
+## 二、安装方法
+
+### 方法 1：使用 requirements.txt（推荐）
+
 ```bash
+# 安装所有依赖
 pip install -r requirements.txt
 ```
 
----
-
-### 方式2：setup.py（推荐用于发布）
-
-在 [setup.py](file:///c:/Users/LX/Desktop/filetool/file_batch_tool/setup.py#L17-L20) 中声明：
-
-```python
-setup(
-    # ... 其他配置
-    install_requires=[
-        "Pillow>=10.0.0",
-        "PyQt5>=5.15.0",
-    ],
-    # 可选依赖
-    extras_require={
-        "dev": [
-            "pytest>=7.0.0",
-            "black>=23.0.0",
-        ],
-        "all": [
-            "Pillow>=10.0.0",
-            "PyQt5>=5.15.0",
-        ]
-    }
-)
-```
-
----
-
-### 方式3：pyproject.toml（现代方式）
-
-创建 `pyproject.toml`：
-
-```toml
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "file-batch-tool"
-version = "1.1.0"
-dependencies = [
-    "Pillow>=10.0.0",
-    "PyQt5>=5.15.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-]
-```
-
----
-
-## 二、如何让其他项目依赖您的项目
-
-### 1. 发布到 PyPI（推荐）
-
-#### 步骤1：构建包
+### 方法 2：手动安装
 
 ```bash
-# 安装构建工具
-pip install build twine
+# 安装 Pillow
+pip install Pillow>=10.0.0
 
-# 构建
-python -m build
+# 安装 PyQt5
+pip install PyQt5>=5.15.0
 ```
 
-#### 步骤2：上传到 PyPI
+### 方法 3：使用国内镜像加速
 
 ```bash
-# 测试上传（TestPyPI）
-twine upload --repository testpypi dist/*
+# 使用清华镜像
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 正式上传
-twine upload dist/*
+# 使用阿里云镜像
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
-#### 步骤3：其他人可以安装使用
+---
+
+## 三、常见安装问题
+
+### 问题 1：PyQt5 安装失败
+
+**Windows 解决方案：**
+```bash
+# 方案1：指定版本
+pip install PyQt5==5.15.9
+
+# 方案2：使用 conda
+conda install pyqt
+
+# 方案3：安装 PyQt5-Qt5 和 PyQt5-sip
+pip install PyQt5-Qt5 PyQt5-sip PyQt5
+```
+
+**Linux 解决方案：**
+```bash
+# Ubuntu/Debian
+sudo apt install libgl1-mesa-glx libegl1 libxkbcommon-x11-0
+pip install PyQt5
+
+# Fedora/CentOS
+sudo dnf install mesa-libGL mesa-libEGL libxkbcommon-x11
+pip install PyQt5
+```
+
+### 问题 2：Pillow 安装失败
+
+**Linux 解决方案：**
+```bash
+# Ubuntu/Debian
+sudo apt install libjpeg-dev zlib1g-dev libpng-dev
+pip install Pillow
+
+# Fedora/CentOS
+sudo dnf install libjpeg-devel zlib-devel libpng-devel
+pip install Pillow
+```
+
+### 问题 3：权限不足
+
+```bash
+# 使用 --user 参数
+pip install -r requirements.txt --user
+
+# 或使用 sudo（Linux/macOS）
+sudo pip install -r requirements.txt
+```
+
+### 问题 4：网络超时
+
+```bash
+# 使用国内镜像
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 或设置超时时间
+pip install -r requirements.txt --timeout 100
+```
+
+---
+
+## 四、虚拟环境使用
+
+### 为什么使用虚拟环境？
+
+- 隔离项目依赖，避免版本冲突
+- 方便项目迁移和部署
+- 保持系统 Python 环境干净
+
+### 创建虚拟环境
+
+**Windows:**
+```bash
+# 创建
+python -m venv venv
+
+# 激活
+venv\Scripts\activate
+
+# 退出
+deactivate
+```
+
+**Linux / macOS:**
+```bash
+# 创建
+python3 -m venv venv
+
+# 激活
+source venv/bin/activate
+
+# 退出
+deactivate
+```
+
+---
+
+## 五、作为库被其他项目依赖
+
+### 方式 1：从 PyPI 安装
 
 ```bash
 pip install file-batch-tool
 ```
 
-然后在他们的代码中：
-```python
-from file_batch_tool import batch_rename
-
-batch_rename("/path/to/files", prefix="my_")
-```
-
----
-
-### 2. 从 Git 仓库直接安装
-
-其他项目可以这样依赖您的项目：
+### 方式 2：从 Git 仓库安装
 
 ```txt
 # 在 requirements.txt 中
 git+https://github.com/c-the-life/file_batch_tool.git@v1.1.0#egg=file-batch-tool
 ```
 
-或使用 SSH：
-```txt
-git+ssh://git@github.com/c-the-life/file_batch_tool.git@v1.1.0#egg=file-batch-tool
+### 方式 3：从本地安装
+
+```bash
+pip install -e /path/to/file_batch_tool
 ```
 
 ---
 
-### 3. 使用 GitHub Releases 发布
+## 六、版本管理
 
-1. 在 GitHub 创建 Release
-2. 上传构建的 `.whl` 和 `.tar.gz` 文件
-3. 其他人可以从 Release 页面下载安装
+### 语义化版本
 
----
-
-## 三、实际案例演示
-
-### 案例1：另一个项目依赖您的库
-
-假设有人要做一个图片管理工具，他们可以这样做：
-
-#### 他们的项目结构：
-```
-photo-manager/
-├── requirements.txt
-├── setup.py
-└── photo_manager/
-    ├── __init__.py
-    └── main.py
-```
-
-#### 他们的 requirements.txt：
-```txt
-file-batch-tool>=1.1.0
-Pillow>=10.0.0
-```
-
-#### 他们的代码（main.py）：
-```python
-from file_batch_tool import batch_convert_image, batch_watermark
-
-def process_photos(input_dir, output_dir):
-    # 转换格式
-    batch_convert_image(input_dir, to_format="webp")
-    
-    # 添加水印
-    batch_watermark(
-        input_dir,
-        type_="text",
-        content="© Photo Manager"
-    )
-
-if __name__ == "__main__":
-    process_photos("./photos", "./output")
-```
-
----
-
-### 案例2：在脚本中使用
-
-```python
-#!/usr/bin/env python3
-"""
-我的自动化脚本
-依赖 file_batch_tool
-"""
-from file_batch_tool import batch_rename, batch_compress
-import sys
-
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <directory>")
-        return
-    
-    directory = sys.argv[1]
-    
-    # 重命名
-    batch_rename(directory, prefix="auto_")
-    
-    # 压缩
-    batch_compress(directory, output="backup.zip")
-
-if __name__ == "__main__":
-    main()
-```
-
----
-
-## 四、版本号规范
-
-使用语义化版本（Semantic Versioning）：`MAJOR.MINOR.PATCH`
+格式：`MAJOR.MINOR.PATCH`
 
 - **MAJOR**：不兼容的 API 变更
-- **MINOR**：向下兼容的功能性新增
+- **MINOR**：向下兼容的功能新增
 - **PATCH**：向下兼容的问题修正
 
-示例：
-- `1.0.0` - 首个稳定版本
-- `1.1.0` - 新增功能
-- `1.1.1` - 修复 bug
-- `2.0.0` - 破坏性更新
+### 依赖版本指定方式
+
+```txt
+# 精确版本
+Pillow==10.0.0
+
+# 最小版本
+Pillow>=10.0.0
+
+# 版本范围
+Pillow>=10.0.0,<11.0.0
+
+# 兼容版本
+Pillow~=10.0.0  # 等同于 >=10.0.0,<11.0.0
+```
 
 ---
 
-## 五、最佳实践
+## 七、依赖更新
 
-1. **固定版本范围**：使用 `>=1.0.0,<2.0.0` 而不是 `==1.0.0`
-2. **使用虚拟环境**：`python -m venv venv`
-3. **定期更新依赖**：`pip list --outdated`
-4. **记录依赖变更**：使用 `pip freeze > requirements.txt`
-5. **添加类型注解**：提升代码可维护性
+### 检查可更新的依赖
+
+```bash
+pip list --outdated
+```
+
+### 更新依赖
+
+```bash
+# 更新单个包
+pip install --upgrade Pillow
+
+# 更新所有依赖
+pip install --upgrade -r requirements.txt
+```
+
+### 冻结当前依赖版本
+
+```bash
+pip freeze > requirements.txt
+```
+
+---
+
+## 八、最佳实践
+
+1. **使用虚拟环境** - 隔离项目依赖
+2. **固定版本范围** - 使用 `>=x.x.x,<y.y.y` 格式
+3. **定期更新依赖** - 获取安全补丁和新功能
+4. **使用国内镜像** - 加速下载
+5. **记录依赖变更** - 使用 `pip freeze` 保存当前环境
