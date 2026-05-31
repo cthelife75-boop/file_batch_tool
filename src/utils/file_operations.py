@@ -11,18 +11,19 @@ import time
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from typing import Callable, List, Optional, Set, Tuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ExifTags
 
 Image.MAX_IMAGE_PIXELS = None
 FILE_LIST_SEPARATOR = "|||"
 
-def safe_log(msg, log_callback=None):
+def safe_log(msg: str, log_callback: Optional[Callable[[str], None]] = None) -> None:
     """统一的日志输出，处理某些控制台的编码崩溃问题
     
     Args:
-        msg (str): 要输出的日志消息
-        log_callback (function, optional): 自定义日志回调函数
+        msg: 要输出的日志消息
+        log_callback: 自定义日志回调函数
     """
     try:
         if log_callback:
