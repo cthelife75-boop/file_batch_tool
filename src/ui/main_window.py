@@ -343,7 +343,8 @@ class FileToolMainWindow(QMainWindow):
                 padding: 14px;
                 font-size: 13px;
                 color: #2c7a7b;
-                max-height: 200px;
+                min-height: 280px;
+                max-height: 350px;
             }
         """)
         
