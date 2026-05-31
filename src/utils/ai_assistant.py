@@ -13,6 +13,10 @@ except ImportError:
 
 
 class AIAssistant:
+    """AI智能助手类
+    
+    提供自然语言命令解析功能，支持规则匹配和真实AI引擎两种模式
+    """
     def __init__(self, use_real_ai=False, api_key=None, model="gpt-3.5-turbo"):
         self.use_real_ai = use_real_ai
         self.api_key = api_key
