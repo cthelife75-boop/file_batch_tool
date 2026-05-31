@@ -37,6 +37,7 @@ def example_simple_rename():
     print("\n说明：为文件添加前缀并替换特定字符串")
     
     # 重命名文件夹中的所有文件
+    
     batch_rename(
         dir_path="./test_images",
         prefix="vacation_",          # 添加前缀 "vacation_"
