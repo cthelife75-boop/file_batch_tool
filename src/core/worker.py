@@ -6,6 +6,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from src.utils import file_operations
 
 class WorkerThread(QThread):
+    """工作线程类
+    
+    提供异步文件处理任务执行功能，支持进度和日志回调
+    """
     log_signal = pyqtSignal(str)
     progress_signal = pyqtSignal(int)
     finish_signal = pyqtSignal(bool)
