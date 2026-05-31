@@ -1,17 +1,18 @@
 """文件操作工具模块
 提供批量文件处理、图片操作、压缩、分类等功能
 """
+import ast
+import csv
 import os
 import re
-import sys
-import csv
-import time
-import ast
-import zipfile
 import shutil
-from pathlib import Path
+import sys
+import time
+import zipfile
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont, ExifTags, ImageColor
+from pathlib import Path
+
+from PIL import Image, ImageColor, ImageDraw, ImageFont, ExifTags
 
 Image.MAX_IMAGE_PIXELS = None
 FILE_LIST_SEPARATOR = "|||"
