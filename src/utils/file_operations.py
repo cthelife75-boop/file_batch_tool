@@ -46,37 +46,56 @@ def safe_log(msg: str, log_callback: Optional[Callable[[str], None]] = None) -> 
         else:
             print(msg)
 
-def parse_input_path(input_path):
+def parse_input_path(input_path: str) -> Tuple[List[Path], str]:
     """解析输入路径，支持单个文件、目录、多个文件（仅筛选文件，排除目录）
     
     Args:
-        input_path (str): 输入路径字符串
+        input_path: 输入路径字符串
         
     Returns:
         tuple: (file_list, type) 其中：
-            file_list (list): Path对象列表
-            type (str): 输入类型，可选值：'single'|'dir'|'multiple'
+            file_list: Path对象列表
+            type: 输入类型，可选值为'single'|'dir'|'multiple'|'invalid'
     """
-    if FILE_LIST_SEPARATOR in input_path:
-        paths = input_path.split(FILE_LIST_SEPARATOR)
-        file_list = []
-        for path in paths:
-            path = path.strip()
-            if path:
-                p = Path(path)
-                if p.is_file():
-                    file_list.append(p)
-                elif p.is_dir():
-                    file_list.extend([f for f in p.iterdir() if f.is_file()])
-        return file_list, "multiple"
-    else:
-        path_obj = Path(input_path)
-        if path_obj.is_file():
-            return [path_obj], "single"
-        elif path_obj.is_dir():
-            return [f for f in path_obj.iterdir() if f.is_file()], "dir"
+    try:
+        if FILE_LIST_SEPARATOR in input_path:
+            paths = input_path.split(FILE_LIST_SEPARATOR)
+            file_list = []
+            for path_str in paths:
+                path_str = path_str.strip()
+                if not path_str:
+                    continue
+                try:
+                    p = Path(path_str)
+                    if p.is_file():
+                        file_list.append(p)
+                    elif p.is_dir():
+                        for f in p.iterdir():
+                            try:
+                                if f.is_file():
+                                    file_list.append(f)
+                            except (PermissionError, OSError):
+                                continue
+                except (PermissionError, OSError):
+                    continue
+            return file_list, "multiple"
         else:
-            return [], "invalid"
+            path_obj = Path(input_path)
+            if path_obj.is_file():
+                return [path_obj], "single"
+            elif path_obj.is_dir():
+                file_list = []
+                for f in path_obj.iterdir():
+                    try:
+                        if f.is_file():
+                            file_list.append(f)
+                    except (PermissionError, OSError):
+                        continue
+                return file_list, "dir"
+            else:
+                return [], "invalid"
+    except Exception:
+        return [], "invalid"
 
 def get_unique_path(target_path: Path) -> Path:
     """生成唯一路径，防止同名冲突（如 file.txt -> file_1.txt）
