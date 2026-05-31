@@ -1,11 +1,26 @@
 # 📚 API 文档
-=======
+
+> **API 说明**：本页面提供了 file_batch_tool 库的完整 API 参考文档，包括所有核心功能函数的使用方法、参数说明和示例代码。
+
+---
+
+## 目录
+- [安装](#安装)
+- [快速开始](#快速开始)
+- [API 参考](#api-参考)
+
+---
 
 ## 安装
 
-```python
-# 安装
+```bash
+# 从 PyPI 安装
 pip install file-batch-tool
+
+# 或从源码安装（开发模式）
+git clone https://github.com/c-the-life/file_batch_tool.git
+cd file_batch_tool
+pip install -e .
 ```
 
 ## 快速开始
