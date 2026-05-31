@@ -2,6 +2,7 @@
 提供异步文件处理任务执行功能
 """
 import traceback
+from typing import Any, Callable, Dict, Optional
 
 # PyQt5 相关导入
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -31,7 +32,7 @@ class WorkerThread(QThread):
         "copy_move": "batch_copy_move"
     }
 
-    def __init__(self, task_type, params):
+    def __init__(self, task_type: str, params: Dict[str, Any]):
         super().__init__()
         self.task_type = task_type
         self.params = params
