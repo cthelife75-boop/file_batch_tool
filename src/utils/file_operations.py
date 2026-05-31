@@ -36,7 +36,16 @@ def safe_log(msg, log_callback=None):
             print(msg)
 
 def parse_input_path(input_path):
-    """解析输入路径，支持单个文件、目录、多个文件（仅筛选文件，排除目录）"""
+    """解析输入路径，支持单个文件、目录、多个文件（仅筛选文件，排除目录）
+    
+    Args:
+        input_path (str): 输入路径字符串
+        
+    Returns:
+        tuple: (file_list, type) 其中：
+            file_list (list): Path对象列表
+            type (str): 输入类型，可选值：'single'|'dir'|'multiple'
+    """
     if FILE_LIST_SEPARATOR in input_path:
         paths = input_path.split(FILE_LIST_SEPARATOR)
         file_list = []
