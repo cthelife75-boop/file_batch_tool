@@ -15,8 +15,17 @@ from typing import Callable, List, Optional, Set, Tuple
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ExifTags
 
+# 全局配置常量
 Image.MAX_IMAGE_PIXELS = None
+
+# 文件列表分隔符，用于处理多个文件路径
 FILE_LIST_SEPARATOR = "|||"
+
+# 支持的图片格式
+SUPPORTED_IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp"}
+
+# 默认图片质量
+DEFAULT_IMAGE_QUALITY = 95
 
 def safe_log(msg: str, log_callback: Optional[Callable[[str], None]] = None) -> None:
     """统一的日志输出，处理某些控制台的编码崩溃问题
@@ -166,7 +175,6 @@ def batch_convert_image(dir_path, to_format, log_callback=None):
     Returns:
         bool: 操作是否成功
     """
-    SUPPORT_FORMATS = {"jpg", "jpeg", "png", "webp"}
     target_format = to_format.lower()
     if target_format == "jpg":
         target_format = "jpeg"
@@ -176,7 +184,7 @@ def batch_convert_image(dir_path, to_format, log_callback=None):
         safe_log(f"❌ 路径 {dir_path} 不是有效文件或目录", log_callback)
         return False
 
-    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORT_FORMATS]
+    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORTED_IMAGE_FORMATS]
     img_count = len(img_list)
 
     if img_count == 0:
@@ -333,12 +341,12 @@ def batch_watermark(dir_path, type_, content="", font="", size=24, color="(255,2
     Returns:
         bool: 操作是否成功
     """
-    SUPPORT_FORMATS = {"jpg", "jpeg", "png", "webp"}
+    SUPPORTED_IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp"}
     all_files, input_type = parse_input_path(dir_path)
     if input_type == "invalid":
         return False
 
-    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORT_FORMATS]
+    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORTED_IMAGE_FORMATS]
     img_count = len(img_list)
     if img_count == 0:
         safe_log("❌ 未找到支持的图片", log_callback)
@@ -473,12 +481,12 @@ def batch_extract_exif(dir_path, output_csv, log_callback=None):
     Returns:
         bool: 操作是否成功
     """
-    SUPPORT_FORMATS = {"jpg", "jpeg", "png", "webp"}
+    SUPPORTED_IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp"}
     all_files, input_type = parse_input_path(dir_path)
     if input_type == "invalid":
         return False
 
-    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORT_FORMATS]
+    img_list = [f for f in all_files if f.suffix.lower().lstrip('.') in SUPPORTED_IMAGE_FORMATS]
     img_count = len(img_list)
     if img_count == 0:
         return False
