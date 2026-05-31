@@ -528,6 +528,18 @@ def batch_extract_exif(dir_path, output_csv, log_callback=None):
     return True
 
 def batch_copy_move(dir_path, target_dir, mode="copy", exclude="", log_callback=None):
+    """批量复制或移动文件
+    
+    Args:
+        dir_path (str): 目录路径或文件列表字符串
+        target_dir (str): 目标目录路径
+        mode (str, optional): 操作模式（copy:复制，move:移动）
+        exclude (str, optional): 要排除的扩展名，逗号分隔
+        log_callback (function, optional): 日志回调函数
+        
+    Returns:
+        bool: 操作是否成功
+    """
     all_files, input_type = parse_input_path(dir_path)
     if input_type == "invalid":
         return False
