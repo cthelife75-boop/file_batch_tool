@@ -1,3 +1,6 @@
+"""文件批量处理工具 - 安装配置文件
+用于打包和发布到 PyPI
+"""
 from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as f:
