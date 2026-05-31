@@ -315,6 +315,22 @@ def batch_classify(dir_path, mode, log_callback=None):
 
 def batch_watermark(dir_path, type_, content="", font="", size=24, color="(255,255,255,128)",
                     opacity=128, watermark_path="", log_callback=None):
+    """批量为图片添加水印
+    
+    Args:
+        dir_path (str): 目录路径或文件列表字符串
+        type_ (str): 水印类型（text:文字水印，image:图片水印）
+        content (str, optional): 文字水印内容
+        font (str, optional): 字体路径
+        size (int, optional): 字体大小
+        color (str, optional): 颜色，格式为 (R,G,B,A)
+        opacity (int, optional): 透明度，0-255
+        watermark_path (str, optional): 图片水印路径
+        log_callback (function, optional): 日志回调函数
+        
+    Returns:
+        bool: 操作是否成功
+    """
     SUPPORT_FORMATS = {"jpg", "jpeg", "png", "webp"}
     all_files, input_type = parse_input_path(dir_path)
     if input_type == "invalid":
