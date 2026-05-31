@@ -1,10 +1,12 @@
 """AI智能助手模块
 提供自然语言命令解析功能，支持规则匹配和真实AI引擎两种模式
 """
+# 标准库导入
 import re
 import json
 from typing import List, Dict, Optional, Tuple
 
+# 第三方库导入（可选）
 try:
     import openai
     OPENAI_AVAILABLE = True
