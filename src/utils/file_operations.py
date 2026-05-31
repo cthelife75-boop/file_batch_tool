@@ -86,6 +86,19 @@ def get_unique_path(target_path: Path) -> Path:
         counter += 1
 
 def batch_rename(dir_path, prefix="", suffix="", find_str="", replace_str="", log_callback=None):
+    """批量重命名文件
+    
+    Args:
+        dir_path (str): 目录路径或文件列表字符串
+        prefix (str, optional): 文件名前缀
+        suffix (str, optional): 文件名后缀
+        find_str (str, optional): 要查找的字符串
+        replace_str (str, optional): 替换为的字符串
+        log_callback (function, optional): 日志回调函数
+        
+    Returns:
+        bool: 操作是否成功
+    """
     file_list, input_type = parse_input_path(dir_path)
     file_count = len(file_list)
 
